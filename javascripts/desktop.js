@@ -81,7 +81,7 @@ function stopEverything() {
 $('#panic').addEventListener('click', stopEverything);
 
 document.addEventListener('pointerdown', e => {
-  if (!(e.target.closest && e.target.closest('.tb, .icon, #arrange, #help'))) startAudio();
+  if (!(e.target.closest && e.target.closest('.tb, .icon, #arrange'))) startAudio();
 }, true);
 document.addEventListener('touchend', () => { if (engine && engine.ctx.state !== 'running') engine.ctx.resume().catch(() => {}); }, { passive: true });
 document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('button, .tube')) e.preventDefault(); });
