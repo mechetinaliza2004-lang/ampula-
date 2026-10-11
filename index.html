@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Синтезатор Ампула</title>
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="images/favicon.png" type="image/png" sizes="64x64">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=PT+Mono&family=PT+Sans:wght@400;700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="stylesheets/style.css">
+</head>
+<body>
+<div class="os">
+  <aside class="side" aria-label="Панель синтезатора">
+    <div class="logo">
+      <h1 class="logo-hand">Ампула</h1>
+    </div>
+    <nav class="menu" aria-label="Ампулы-голоса">
+      <h2>АМПУЛЫ</h2>
+      <button type="button" class="vbtn" data-voice="glass" aria-pressed="true">СТЕКЛО<kbd>1</kbd></button>
+      <button type="button" class="vbtn" data-voice="box" aria-pressed="false">ШКАТУЛКА<kbd>2</kbd></button>
+      <button type="button" class="vbtn" data-voice="eel" aria-pressed="false">УГОРЬ<kbd>3</kbd></button>
+    </nav>
+    <section class="settings" aria-label="Назначение">
+      <h2>НАЗНАЧЕНИЕ</h2>
+      <div class="row"><label for="echo">ЭХО</label><output for="echo" id="echoOut">35%</output><input type="range" id="echo" min="0" max="100" value="35"></div>
+      <div class="row"><label for="dose">ДОЗА</label><output for="dose" id="doseOut">70%</output><input type="range" id="dose" min="0" max="100" value="70"></div>
+      <div class="oct" role="group" aria-label="Октава">
+        <span class="lbl">ОКТАВА</span>
+        <button type="button" class="btn sq" id="octDown" aria-label="На октаву ниже">−</button>
+        <output id="octOut" aria-live="polite">C4–C6</output>
+        <button type="button" class="btn sq" id="octUp" aria-label="На октаву выше">+</button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="desk">
+    <div class="desk-grid">
+      <div class="col">
+        <section class="win w-monitor" aria-labelledby="t-mon">
+          <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-mon">монитор_пациента_007.avi</h2><span class="meta">сборка 2003</span></div>
+          <div class="screen">
+            <div class="mon-top">
+              <span>ПАЦИЕНТ № 007</span>
+              <span class="pulse" id="pulse"><i></i>ПУЛЬС</span>
+              <span class="proc" id="monProc">ПРОЦЕДУРА: СТЕКЛО</span>
+            </div>
+            <div class="scope-wrap">
+              <canvas id="scope" role="img" aria-label="Монитор: форма звуковой волны"></canvas>
+              <p class="mon-msg" id="monMsg">НАЖМИТЕ КЛАВИШУ,<br>ЧТОБЫ НАЧАТЬ ПРОЦЕДУРУ</p>
+            </div>
+            <dl class="mon-read">
+              <div><dt>НОТА</dt><dd id="rdNote">—</dd></div>
+              <div><dt>ЧАСТОТА</dt><dd id="rdHz">—</dd></div>
+              <div><dt>ГОЛОСОВ</dt><dd id="rdVoices">0</dd></div>
+              <div><dt>ГЛУБИНА</dt><dd id="rdDepth">20%</dd></div>
+            </dl>
+            <div class="ticker" aria-hidden="true"><span>ПЕЙТЕ БОЛЬШЕ ВОДЫ ✚ ВАМ УЖЕ ЛУЧШЕ ✚ ПРОЦЕДУРА ПРОДОЛЖАЕТСЯ ✚ СОХРАНЯЙТЕ СПОКОЙСТВИЕ ✚ ВОДА ЗАБИРАЕТ ВСЁ ЛИШНЕЕ ✚ НИКТО НЕ ПОКИДАЕТ САНАТОРИЙ ✚</span></div>
+          </div>
+        </section>
+
+        <section class="win w-keys" aria-labelledby="t-keys">
+          <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-keys">кафель.exe — клавиатура</h2></div>
+          <div class="keys" id="keys" role="group" aria-label="Клавиши-кафель"></div>
+          <div class="keys-foot"><span><kbd>A</kbd> … <kbd>'</kbd> ноты в любой раскладке</span><span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> ампулы</span><span><kbd>←</kbd> <kbd>→</kbd> октава</span><span><kbd>Esc</kbd> тишина</span></div>
+        </section>
+      </div>
+
+      <div class="col">
+        <section class="win w-dialog" id="dialog" role="alertdialog" aria-labelledby="t-dlg" aria-describedby="dlgText">
+          <div class="tb"><span id="t-dlg">??????</span><button type="button" class="tb-x" id="dlgX" aria-label="Закрыть окно">×</button></div>
+          <div class="dlg">
+            <span class="warn" aria-hidden="true"></span>
+            <p id="dlgText">Процедура требует звука.<br>Начать сеанс?</p>
+            <button type="button" class="btn" id="dlgOk">Ок</button>
+          </div>
+        </section>
+
+        <div class="pair">
+          <section class="win w-tube" aria-labelledby="t-tube">
+            <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-tube">пробирка</h2></div>
+            <div class="tube-inner">
+              <div class="tube-area">
+                <div class="scale" aria-hidden="true"><span>100</span><span>50</span><span>0</span></div>
+                <div class="tube" id="tube" role="slider" tabindex="0" aria-label="Погружение звука в воду" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" aria-valuetext="20%">
+                  <div class="water" id="water"></div>
+                </div>
+              </div>
+              <p class="tube-read"><b id="depthOut">20%</b><small>погружение:<br>тяните воду вверх</small></p>
+            </div>
+          </section>
+          <section class="win w-log" aria-labelledby="t-log">
+            <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-log">журнал.txt</h2></div>
+            <div class="term" id="log">
+              <p class="dim">&gt; пациент 007 принят</p>
+              <p class="dim">&gt; назначено: погружение 20%</p>
+              <p>&gt; пейте больше воды</p>
+              <p>&gt; вам уже лучше</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="icons" role="group" aria-label="Ампулы на рабочем столе">
+          <button type="button" class="icon" data-voice="glass" aria-pressed="true" style="--c:var(--cure)"><span class="vial" aria-hidden="true"><span class="liq"></span></span><span class="lbl">Стекло.amp</span></button>
+          <button type="button" class="icon" data-voice="box" aria-pressed="false" style="--c:var(--brass)"><span class="vial" aria-hidden="true"><span class="liq"></span></span><span class="lbl">Шкатулка.amp</span></button>
+          <button type="button" class="icon" data-voice="eel" aria-pressed="false" style="--c:var(--eel)"><span class="vial" aria-hidden="true"><span class="liq"></span></span><span class="lbl">Угорь.amp</span></button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="taskbar">
+      <span class="tb-ver">[2.0]</span>
+      <button type="button" class="tb-btn" id="arrange" title="Вернуть окна и значки на свои места">[по местам]</button>
+      <a class="tb-btn" id="help" href="about.html" title="Справка: идея, управление, голоса">[справка]</a>
+      <span class="tb-status" id="tbStatus">Готово. Нажмите клавишу, чтобы начать процедуру</span>
+      <span class="tb-tray"><span id="tbVoice">Стекло</span> · <span id="tbRate">звук выкл.</span> · <span id="tbClock">--:--</span></span>
+      <button type="button" class="tb-red" id="panic" title="Заглушить все ноты (Esc)">[тишина] ✕</button>
+    </footer>
+  </main>
+</div>
+<div class="crt" aria-hidden="true"></div>
+<script src="javascripts/engine.js"></script>
+<script src="javascripts/interface.js"></script>
+<script src="javascripts/desktop.js"></script>
+</body>
+</html>
