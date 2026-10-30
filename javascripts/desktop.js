@@ -73,6 +73,7 @@ $('#arrange').addEventListener('click', () => {
 });
 
 function stopEverything() {
+  stopSeq(true, true);
   ptr.clear();
   releaseAll('');
   if (engine) engine.killAll();
@@ -81,13 +82,14 @@ function stopEverything() {
 $('#panic').addEventListener('click', stopEverything);
 
 document.addEventListener('pointerdown', e => {
-  if (!(e.target.closest && e.target.closest('.tb, .icon, #arrange'))) startAudio();
+  if (!(e.target.closest && e.target.closest('.tb, .icon, #arrange, #dialog'))) startAudio();
 }, true);
 document.addEventListener('touchend', () => { if (engine && engine.ctx.state !== 'running') engine.ctx.resume().catch(() => {}); }, { passive: true });
-document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('button, .tube')) e.preventDefault(); });
+document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('button, .tube, .chk')) e.preventDefault(); });
 
 function frame() {
   if (!document.hidden) {
+    seqFrame();
     drawScope();
     if (engine) ui.rdVoices.textContent = engine.activeCount();
   }

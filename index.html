@@ -34,11 +34,44 @@
         <button type="button" class="btn sq" id="octUp" aria-label="На октаву выше">+</button>
       </div>
     </section>
+    <section class="pult" aria-label="Пульт сеанса">
+      <h2>СЕАНС «ТИХИЙ ЧАС»</h2>
+      <div class="pult-btns">
+        <button type="button" class="btn big" id="play" aria-pressed="false">▶ СТАРТ</button>
+        <button type="button" class="btn" id="again">ЗАНОВО</button>
+      </div>
+      <div class="row"><label for="tempo">СКОРОСТЬ</label><output for="tempo" id="tempoOut">84</output><input type="range" id="tempo" min="60" max="120" value="84"></div>
+      <label class="chk"><input type="checkbox" id="scenario" checked><span>по сценарию: 4 части</span></label>
+      <div class="pult-screen" aria-live="polite">
+        <span id="pPart">ЧАСТЬ: —</span>
+        <span class="pult-row"><span id="pBar">ТАКТ 0/32</span><span>АККОРД <b id="pChord">Am</b></span></span>
+        <span class="pbar"><i id="pProg"></i></span>
+      </div>
+    </section>
   </aside>
 
   <main class="desk">
     <div class="desk-grid">
       <div class="col">
+        <div class="insts" id="insts"></div>
+
+        <section class="win w-keys" aria-labelledby="t-keys">
+          <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-keys">кафель.exe — клавиатура</h2></div>
+          <div class="keys" id="keys" role="group" aria-label="Клавиши-кафель"></div>
+          <div class="keys-foot"><span><kbd>A</kbd> … <kbd>'</kbd> ноты в любой раскладке</span><span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> ампулы</span><span><kbd>←</kbd> <kbd>→</kbd> октава</span><span><kbd>Esc</kbd> тишина</span><span><kbd>Пробел</kbd> старт</span><span class="fit-hint"><i></i> в тон аккорду</span></div>
+        </section>
+      </div>
+
+      <div class="col">
+        <section class="win w-dialog" id="dialog" role="alertdialog" aria-labelledby="t-dlg" aria-describedby="dlgText">
+          <div class="tb"><span id="t-dlg">??????</span><button type="button" class="tb-x" id="dlgX" aria-label="Закрыть окно">×</button></div>
+          <div class="dlg">
+            <span class="warn" aria-hidden="true"></span>
+            <p id="dlgText">Процедура требует звука.<br>Начать сеанс «Тихий час»?</p>
+            <button type="button" class="btn" id="dlgOk">Ок</button>
+          </div>
+        </section>
+
         <section class="win w-monitor" aria-labelledby="t-mon">
           <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-mon">монитор_пациента_007.avi</h2><span class="meta">сборка 2003</span></div>
           <div class="screen">
@@ -49,7 +82,7 @@
             </div>
             <div class="scope-wrap">
               <canvas id="scope" role="img" aria-label="Монитор: форма звуковой волны"></canvas>
-              <p class="mon-msg" id="monMsg">НАЖМИТЕ КЛАВИШУ,<br>ЧТОБЫ НАЧАТЬ ПРОЦЕДУРУ</p>
+              <p class="mon-msg" id="monMsg">НАЖМИТЕ «СТАРТ»,<br>ЧТОБЫ НАЧАТЬ СЕАНС</p>
             </div>
             <dl class="mon-read">
               <div><dt>НОТА</dt><dd id="rdNote">—</dd></div>
@@ -58,23 +91,6 @@
               <div><dt>ГЛУБИНА</dt><dd id="rdDepth">20%</dd></div>
             </dl>
             <div class="ticker" aria-hidden="true"><span>ПЕЙТЕ БОЛЬШЕ ВОДЫ ✚ ВАМ УЖЕ ЛУЧШЕ ✚ ПРОЦЕДУРА ПРОДОЛЖАЕТСЯ ✚ СОХРАНЯЙТЕ СПОКОЙСТВИЕ ✚ ВОДА ЗАБИРАЕТ ВСЁ ЛИШНЕЕ ✚ НИКТО НЕ ПОКИДАЕТ САНАТОРИЙ ✚</span></div>
-          </div>
-        </section>
-
-        <section class="win w-keys" aria-labelledby="t-keys">
-          <div class="tb"><span class="ico" aria-hidden="true"></span><h2 id="t-keys">кафель.exe — клавиатура</h2></div>
-          <div class="keys" id="keys" role="group" aria-label="Клавиши-кафель"></div>
-          <div class="keys-foot"><span><kbd>A</kbd> … <kbd>'</kbd> ноты в любой раскладке</span><span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> ампулы</span><span><kbd>←</kbd> <kbd>→</kbd> октава</span><span><kbd>Esc</kbd> тишина</span></div>
-        </section>
-      </div>
-
-      <div class="col">
-        <section class="win w-dialog" id="dialog" role="alertdialog" aria-labelledby="t-dlg" aria-describedby="dlgText">
-          <div class="tb"><span id="t-dlg">??????</span><button type="button" class="tb-x" id="dlgX" aria-label="Закрыть окно">×</button></div>
-          <div class="dlg">
-            <span class="warn" aria-hidden="true"></span>
-            <p id="dlgText">Процедура требует звука.<br>Начать сеанс?</p>
-            <button type="button" class="btn" id="dlgOk">Ок</button>
           </div>
         </section>
 
@@ -113,7 +129,7 @@
     <footer class="taskbar">
       <span class="tb-ver">[2.0]</span>
       <button type="button" class="tb-btn" id="arrange" title="Вернуть окна и значки на свои места">[по местам]</button>
-      <span class="tb-status" id="tbStatus">Готово. Нажмите клавишу, чтобы начать процедуру</span>
+      <span class="tb-status" id="tbStatus">Готово. Нажмите «Старт», чтобы начать сеанс</span>
       <span class="tb-tray"><span id="tbVoice">Стекло</span> · <span id="tbRate">звук выкл.</span> · <span id="tbClock">--:--</span></span>
       <button type="button" class="tb-red" id="panic" title="Заглушить все ноты (Esc)">[тишина] ✕</button>
     </footer>
@@ -122,6 +138,7 @@
 <div class="crt" aria-hidden="true"></div>
 <script src="javascripts/engine.js"></script>
 <script src="javascripts/interface.js"></script>
+<script src="javascripts/composition.js"></script>
 <script src="javascripts/desktop.js"></script>
 </body>
 </html>

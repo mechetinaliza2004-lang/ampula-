@@ -37,7 +37,14 @@ const VOICES = {
 };
 const VOICE_ORDER = ['glass', 'box', 'eel'];
 
-const MAX_NOTES = 12;
+const DROPS = {
+  drop: { f0: 700, f1: 1500, sweep: 0.05, decay: 0.14, peak: 0.38 },
+  tick: { noise: true, bp: 3600, q: 4, f0: 2300, decay: 0.05, peak: 0.42 },
+  plop: { f0: 260, f1: 85, sweep: 0.1, decay: 0.32, peak: 0.6 },
+};
+const TRACK_KEYS = ['keys', 'glass', 'box', 'eel', 'drops'];
+
+const MAX_NOTES = 32;
 const NOTE_PEAK = 0.3;
 const midiHz = n => 440 * Math.pow(2, (n - 69) / 12);
 
@@ -83,7 +90,16 @@ function createEngine(ctx) {
   wobble.type = 'sine';
   wobble.start();
 
-  const eng = { ctx, analyser, voices };
+  const tracks = {};
+  TRACK_KEYS.forEach(k => { const g = ctx.createGain(); g.connect(bus); tracks[k] = g; });
+
+  const eng = { ctx, analyser, voices, tracks };
+
+  eng.trackLevel = (k, value, when, tau) => {
+    const p = tracks[k].gain, t = Math.max(when || 0, ctx.currentTime);
+    if (tau) p.setTargetAtTime(value, t, tau);
+    else { p.cancelScheduledValues(t); p.setValueAtTime(value, t); }
+  };
 
   eng.set = ({ immersion: i, echo, dose: d }, instant) => {
     const now = ctx.currentTime;
@@ -143,6 +159,7 @@ function createEngine(ctx) {
     stopAt(v, v.end);
   }
   eng.killAll = () => voices.forEach(v => { if (!v.killed) kill(v); });
+  eng.killTrack = k => voices.forEach(v => { if (!v.killed && v.track === k) kill(v); });
 
   function makeRoom() {
     const live = [...voices].filter(v => !v.killed);
@@ -151,7 +168,8 @@ function createEngine(ctx) {
     kill(live[0]);
   }
 
-  eng.noteOn = (note, voiceKey, when) => {
+  eng.noteOn = (note, voiceKey, when, opts = {}) => {
+    const track = tracks[opts.track] ? opts.track : 'keys';
     const V = VOICES[voiceKey];
     const t = Math.max(when || 0, ctx.currentTime + 0.003);
     makeRoom();
@@ -161,7 +179,7 @@ function createEngine(ctx) {
     filter.frequency.value = V.cutoff;
     filter.Q.value = V.q;
     amp.gain.value = 0;
-    filter.connect(amp); amp.connect(bus);
+    filter.connect(amp); amp.connect(tracks[track]);
     const nodes = [filter, amp], sources = [];
     const wear = V.wear ? (Math.random() * 2 - 1) * V.wear : 0;
 
@@ -204,10 +222,10 @@ function createEngine(ctx) {
       filter.detune.setTargetAtTime(0, t, 0.12);
     }
 
-    const env = { t0: t, attack: V.attack, decay: V.decay, sustain: V.sustain, peak: NOTE_PEAK };
+    const env = { t0: t, attack: V.attack, decay: V.decay, sustain: V.sustain, peak: NOTE_PEAK * (opts.vel || 1) };
     envStart(amp.gain, env);
     sources.forEach(s => s.start(t));
-    const v = { note, voiceKey, oscs, sources, nodes, amp, env, t0: t, rel: null, end: Infinity, killed: false };
+    const v = { note, voiceKey, track, oscs, sources, nodes, amp, env, t0: t, rel: null, end: Infinity, killed: false };
     oscs[0].onended = () => cleanup(v);
     voices.add(v);
     return v;
@@ -223,6 +241,48 @@ function createEngine(ctx) {
     v.amp.gain.linearRampToValueAtTime(0, t + R + 0.015);
     v.end = t + R + 0.02;
     stopAt(v, v.end);
+  };
+
+  let noiseBuf = null;
+  function noise() {
+    if (!noiseBuf) {
+      const len = Math.round(ctx.sampleRate * 0.2);
+      noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    return noiseBuf;
+  }
+  eng.drop = (kind, when, vel = 1) => {
+    const D = DROPS[kind];
+    if (!D) return;
+    const t = Math.max(when || 0, ctx.currentTime + 0.003), end = t + D.decay * 1.8 + 0.05;
+    const jitter = 1 + (Math.random() * 2 - 1) * 0.04;
+    const amp = ctx.createGain();
+    amp.connect(tracks.drops);
+    amp.gain.setValueAtTime(0, t);
+    amp.gain.linearRampToValueAtTime(D.peak * vel, t + 0.003);
+    amp.gain.setTargetAtTime(0, t + 0.003, D.decay / 4);
+    const nodes = [amp];
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    if (D.noise) {
+      const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), og = ctx.createGain();
+      src.buffer = noise();
+      bp.type = 'bandpass'; bp.frequency.value = D.bp * jitter; bp.Q.value = D.q;
+      src.connect(bp); bp.connect(amp);
+      o.frequency.value = D.f0 * jitter; og.gain.value = 0.3;
+      o.connect(og); og.connect(amp);
+      src.start(t); src.stop(end);
+      nodes.push(src, bp, og);
+    } else {
+      o.frequency.setValueAtTime(D.f0 * jitter, t);
+      o.frequency.exponentialRampToValueAtTime(D.f1 * jitter, t + D.sweep);
+      o.connect(amp);
+    }
+    o.start(t); o.stop(end);
+    nodes.push(o);
+    o.onended = () => nodes.forEach(n => n.disconnect());
   };
 
   eng.activeCount = () => {

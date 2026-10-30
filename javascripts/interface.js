@@ -198,7 +198,9 @@ function buildKeys() {
 }
 function paintKey(key) {
   const el = keyEls.get(key);
-  if (el) el.classList.toggle('on', keyHold.has(key));
+  if (!el) return;
+  el.classList.toggle('on', keyHold.has(key));
+  el.classList.toggle('fit', !!(seq.hint && seq.hint.includes(key % 12)));
 }
 function shiftOctave(d) {
   const o = clamp(state.octave + d, OCT_MIN, OCT_MAX + 1 - nOct);
